@@ -1,0 +1,288 @@
+Program ::= Declaration*
+
+Declaration
+    ::= TypedefDeclaration
+     | FunctionDeclaration
+
+TypedefDeclaration
+    ::= Annotation*
+        "typedef" Identifier TypeParameters?
+        "=" Type ";"
+
+FunctionDeclaration
+    ::= Annotation*
+        Type Identifier
+        "(" Parameters? ")"
+        Block
+
+
+Type
+    ::= NamedType NullableMarker?
+
+NamedType
+    ::= Identifier TypeArguments?
+
+TypeArguments
+    ::= "<" Type ("," Type)* ">"
+
+TypeParameters
+    ::= "<" TypeParameter ("," TypeParameter)* ">"
+
+TypeParameter
+    ::= Identifier
+
+NullableMarker ::= "?"
+
+
+Annotation
+    ::= "@" Identifier
+        "(" AnnotationArguments? ")"
+
+AnnotationArguments
+    ::= AnnotationArgument ("," AnnotationArgument)*
+
+AnnotationArgument
+    ::= Expression
+     | Identifier ":" Expression
+
+
+Parameters
+    ::= PositionalParameters? NamedParameters?
+
+PositionalParameters
+    ::= Parameter ("," Parameter)*
+
+NamedParameters
+    ::= "{" NamedParameter ("," NamedParameter)* "}"
+
+Parameter
+    ::= Type Identifier
+
+NamedParameter
+    ::= "required" Type Identifier
+     | Type Identifier Initializer?
+
+Initializer
+    ::= "=" Expression
+
+
+Block
+    ::= "{" Statement* "}"
+
+Statement
+    ::= VariableDeclarationStatement
+     | AssignmentStatement
+     | IndexAssignmentStatement
+     | IfStatement
+     | WhileStatement
+     | ForStatement
+     | ReturnStatement
+     | ExpressionStatement
+
+VariableDeclarationStatement
+    ::= "final" Type Identifier "=" Expression ";"
+     | Type Identifier Initializer? ";"
+
+Initializer
+    ::= "=" Expression
+
+AssignmentStatement
+    ::= Identifier "=" Expression ";"
+
+IndexAssignmentStatement
+    ::= PostfixExpression "[" Expression "]"
+        "=" Expression ";"
+
+IfStatement
+    ::= "if" "(" Expression ")" Block
+        ("else" Block)?
+
+WhileStatement
+    ::= "while" "(" Expression ")" Block
+
+ForStatement
+    ::= "for" "(" ForInitializer? ";"
+                    Expression? ";"
+                    ForUpdate? ")"
+        Block
+
+ForInitializer
+    ::= Type Identifier Initializer?
+     | Expression
+
+ForUpdate
+    ::= Expression
+
+ReturnStatement
+    ::= "return" Expression? ";"
+
+ExpressionStatement
+    ::= Expression ";"
+
+
+Expression
+    ::= AssignmentExpression
+
+AssignmentExpression
+    ::= LogicalOrExpression
+     | LogicalOrExpression "??" AssignmentExpression
+
+LogicalOrExpression
+    ::= LogicalAndExpression
+     | LogicalOrExpression "||" LogicalAndExpression
+
+LogicalAndExpression
+    ::= EqualityExpression
+     | LogicalAndExpression "&&" EqualityExpression
+
+EqualityExpression
+    ::= RelationalExpression
+     | EqualityExpression EqualityOperator RelationalExpression
+
+RelationalExpression
+    ::= AdditiveExpression
+     | RelationalExpression RelationalOperator AdditiveExpression
+
+AdditiveExpression
+    ::= MultiplicativeExpression
+     | AdditiveExpression AdditiveOperator MultiplicativeExpression
+
+MultiplicativeExpression
+    ::= UnaryExpression
+     | MultiplicativeExpression MultiplicativeOperator UnaryExpression
+
+UnaryExpression
+    ::= PostfixExpression
+     | "!" UnaryExpression
+     | "-" UnaryExpression
+     | "+" UnaryExpression
+
+PostfixExpression
+    ::= PrimaryExpression PostfixPart*
+
+PostfixPart
+    ::= "." Identifier
+     | "[" Expression "]"
+     | "(" Arguments? ")"
+     | "!"
+     | "++"
+     | "--"
+
+PrimaryExpression
+    ::= Literal
+     | Identifier
+     | ListLiteral
+     | "(" Expression ")"
+
+
+Arguments
+    ::= Argument ("," Argument)*
+
+Argument
+    ::= Expression
+     | Identifier ":" Expression
+
+
+ListLiteral
+    ::= "[" ListElements? "]"
+
+ListElements
+    ::= ListElement ("," ListElement)*
+
+ListElement
+    ::= Expression
+     | CollectionFor
+
+CollectionFor
+    ::= "for" "(" ForInitializer? ";"
+                       Expression? ";"
+                       ForUpdate? ")"
+        Expression
+
+
+Literal
+    ::= IntegerLiteral
+     | BooleanLiteral
+     | StringLiteral
+     | NullLiteral
+
+BooleanLiteral
+    ::= "true"
+     | "false"
+
+NullLiteral
+    ::= "null"
+
+IntegerLiteral
+    ::= Digit+
+
+StringLiteral
+    ::= "'" StringCharacter* "'"
+     | '"' StringCharacter* '"'
+
+
+EqualityOperator
+    ::= "=="
+     | "!="
+
+RelationalOperator
+    ::= "<"
+     | "<="
+     | ">"
+     | ">="
+
+AdditiveOperator
+    ::= "+"
+     | "-"
+
+MultiplicativeOperator
+    ::= "*"
+     | "/"
+     | "%"
+
+
+/// Predicate grammar
+
+Predicate
+    ::= PredicateOr
+
+PredicateOr
+    ::= PredicateAnd
+     | PredicateOr "||" PredicateAnd
+
+PredicateAnd
+    ::= PredicateUnary
+     | PredicateAnd "&&" PredicateUnary
+
+PredicateUnary
+    ::= PredicatePrimary
+     | "!" PredicateUnary
+
+PredicatePrimary
+    ::= "(" Predicate ")"
+     | Comparison
+     | BooleanExpression
+
+Comparison
+    ::= Value ComparisonOperator Value
+
+BooleanExpression
+    ::= Value
+
+Value
+    ::= Identifier
+     | IntegerLiteral
+     | BooleanLiteral
+     | LengthExpression
+     | ArithmeticExpression
+
+LengthExpression
+    ::= "length" "(" Identifier ")"
+
+ComparisonOperator
+    ::= "<"
+     | "<="
+     | ">"
+     | ">="
+     | "=="
+     | "!="
