@@ -4,10 +4,12 @@ Declaration
     ::= TypedefDeclaration
      | FunctionDeclaration
 
+
 TypedefDeclaration
     ::= Annotation*
         "typedef" Identifier TypeParameters?
         "=" Type ";"
+
 
 FunctionDeclaration
     ::= Annotation*
@@ -16,11 +18,22 @@ FunctionDeclaration
         Block
 
 
+// -----------------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------------
+
 Type
     ::= NamedType NullableMarker?
 
 NamedType
-    ::= Identifier TypeArguments?
+    ::= BaseType
+     | Identifier TypeArguments?
+
+// Types supported by the refinement system.
+BaseType
+    ::= "int"
+     | "bool"
+     | "List" "<" Type ">"
 
 TypeArguments
     ::= "<" Type ("," Type)* ">"
@@ -31,8 +44,13 @@ TypeParameters
 TypeParameter
     ::= Identifier
 
-NullableMarker ::= "?"
+NullableMarker
+    ::= "?"
 
+
+// -----------------------------------------------------------------------------
+// Annotations
+// -----------------------------------------------------------------------------
 
 Annotation
     ::= "@" Identifier
@@ -46,6 +64,10 @@ AnnotationArgument
      | Identifier ":" Expression
 
 
+// -----------------------------------------------------------------------------
+// Parameters
+// -----------------------------------------------------------------------------
+
 Parameters
     ::= PositionalParameters? NamedParameters?
 
@@ -53,7 +75,9 @@ PositionalParameters
     ::= Parameter ("," Parameter)*
 
 NamedParameters
-    ::= "{" NamedParameter ("," NamedParameter)* "}"
+    ::= "{"
+        NamedParameter ("," NamedParameter)*
+        "}"
 
 Parameter
     ::= Type Identifier
@@ -65,6 +89,10 @@ NamedParameter
 Initializer
     ::= "=" Expression
 
+
+// -----------------------------------------------------------------------------
+// Statements
+// -----------------------------------------------------------------------------
 
 Block
     ::= "{" Statement* "}"
@@ -79,77 +107,97 @@ Statement
      | ReturnStatement
      | ExpressionStatement
 
+
 VariableDeclarationStatement
     ::= "final" Type Identifier "=" Expression ";"
      | Type Identifier Initializer? ";"
 
-Initializer
-    ::= "=" Expression
 
 AssignmentStatement
     ::= Identifier "=" Expression ";"
+
 
 IndexAssignmentStatement
     ::= PostfixExpression "[" Expression "]"
         "=" Expression ";"
 
+
 IfStatement
     ::= "if" "(" Expression ")" Block
         ("else" Block)?
 
+
 WhileStatement
     ::= "while" "(" Expression ")" Block
 
+
 ForStatement
-    ::= "for" "(" ForInitializer? ";"
-                    Expression? ";"
-                    ForUpdate? ")"
+    ::= "for"
+        "(" ForInitializer? ";"
+             Expression? ";"
+             ForUpdate? ")"
         Block
+
 
 ForInitializer
     ::= Type Identifier Initializer?
      | Expression
 
+
 ForUpdate
     ::= Expression
 
+
 ReturnStatement
     ::= "return" Expression? ";"
+
 
 ExpressionStatement
     ::= Expression ";"
 
 
+// -----------------------------------------------------------------------------
+// Expressions
+// -----------------------------------------------------------------------------
+
 Expression
     ::= AssignmentExpression
+
 
 AssignmentExpression
     ::= LogicalOrExpression
      | LogicalOrExpression "??" AssignmentExpression
 
+
 LogicalOrExpression
     ::= LogicalAndExpression
      | LogicalOrExpression "||" LogicalAndExpression
+
 
 LogicalAndExpression
     ::= EqualityExpression
      | LogicalAndExpression "&&" EqualityExpression
 
+
 EqualityExpression
     ::= RelationalExpression
      | EqualityExpression EqualityOperator RelationalExpression
+
 
 RelationalExpression
     ::= AdditiveExpression
      | RelationalExpression RelationalOperator AdditiveExpression
 
+
 AdditiveExpression
     ::= MultiplicativeExpression
      | AdditiveExpression AdditiveOperator MultiplicativeExpression
 
+
 MultiplicativeExpression
     ::= UnaryExpression
      | MultiplicativeExpression MultiplicativeOperator UnaryExpression
+
 
 UnaryExpression
     ::= PostfixExpression
@@ -157,8 +205,10 @@ UnaryExpression
      | "-" UnaryExpression
      | "+" UnaryExpression
 
+
 PostfixExpression
     ::= PrimaryExpression PostfixPart*
+
 
 PostfixPart
     ::= "." Identifier
@@ -168,12 +218,17 @@ PostfixPart
      | "++"
      | "--"
 
+
 PrimaryExpression
     ::= Literal
      | Identifier
      | ListLiteral
      | "(" Expression ")"
 
+
+// -----------------------------------------------------------------------------
+// Function and method calls
+// -----------------------------------------------------------------------------
 
 Arguments
     ::= Argument ("," Argument)*
@@ -182,6 +237,10 @@ Argument
     ::= Expression
      | Identifier ":" Expression
 
+
+// -----------------------------------------------------------------------------
+// Lists
+// -----------------------------------------------------------------------------
 
 ListLiteral
     ::= "[" ListElements? "]"
@@ -193,12 +252,18 @@ ListElement
     ::= Expression
      | CollectionFor
 
+
 CollectionFor
-    ::= "for" "(" ForInitializer? ";"
-                       Expression? ";"
-                       ForUpdate? ")"
+    ::= "for"
+        "(" ForInitializer? ";"
+             Expression? ";"
+             ForUpdate? ")"
         Expression
 
+
+// -----------------------------------------------------------------------------
+// Literals
+// -----------------------------------------------------------------------------
 
 Literal
     ::= IntegerLiteral
@@ -206,24 +271,33 @@ Literal
      | StringLiteral
      | NullLiteral
 
+
 BooleanLiteral
     ::= "true"
      | "false"
 
+
 NullLiteral
     ::= "null"
 
+
 IntegerLiteral
     ::= Digit+
+
 
 StringLiteral
     ::= "'" StringCharacter* "'"
      | '"' StringCharacter* '"'
 
 
+// -----------------------------------------------------------------------------
+// Operators
+// -----------------------------------------------------------------------------
+
 EqualityOperator
     ::= "=="
      | "!="
+
 
 RelationalOperator
     ::= "<"
@@ -231,9 +305,11 @@ RelationalOperator
      | ">"
      | ">="
 
+
 AdditiveOperator
     ::= "+"
      | "-"
+
 
 MultiplicativeOperator
     ::= "*"
@@ -241,33 +317,42 @@ MultiplicativeOperator
      | "%"
 
 
-/// Predicate grammar
+// -----------------------------------------------------------------------------
+// Refinement predicate grammar
+// -----------------------------------------------------------------------------
 
 Predicate
     ::= PredicateOr
+
 
 PredicateOr
     ::= PredicateAnd
      | PredicateOr "||" PredicateAnd
 
+
 PredicateAnd
     ::= PredicateUnary
      | PredicateAnd "&&" PredicateUnary
 
+
 PredicateUnary
     ::= PredicatePrimary
      | "!" PredicateUnary
+
 
 PredicatePrimary
     ::= "(" Predicate ")"
      | Comparison
      | BooleanExpression
 
+
 Comparison
     ::= Value ComparisonOperator Value
 
+
 BooleanExpression
     ::= Value
+
 
 Value
     ::= Identifier
@@ -276,8 +361,26 @@ Value
      | LengthExpression
      | ArithmeticExpression
 
+
 LengthExpression
     ::= "length" "(" Identifier ")"
+
+
+ArithmeticExpression
+    ::= ArithmeticTerm
+     | ArithmeticExpression AdditiveOperator ArithmeticTerm
+
+
+ArithmeticTerm
+    ::= ArithmeticFactor
+     | ArithmeticTerm MultiplicativeOperator ArithmeticFactor
+
+
+ArithmeticFactor
+    ::= Identifier
+     | IntegerLiteral
+     | "(" ArithmeticExpression ")"
+
 
 ComparisonOperator
     ::= "<"
