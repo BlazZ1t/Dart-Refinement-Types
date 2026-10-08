@@ -30,6 +30,11 @@ void main() {
   @Refinement(identifier: 'x', predicate: 'x < 10')
   nat variableLessThanTen = 5;
   print(variableLessThanTen);
+
+  // Cannot do that since it is not compile time information.
+  // We now this only at runtime which makes sense
+  // On the right is the x < 11
+  // This is actually unsafe.
   variableLessThanTen = addOne(variableLessThanTen);
 
   /// Assume input comes in the value of which we don't know
@@ -45,7 +50,7 @@ void main() {
     variableLessThanTen = number;
   }
 
-  if (number < 10 && number > 10) {
+  if (number < 0 && number > 10) {
     /// Proven safe
     variableLessThanTen = number;
   } else {
@@ -60,7 +65,7 @@ void main() {
   print(items[1]);
   items[2] = 5;
 
-  for (nat i = 0; i < 20; i++) {
+  for (int i = 0; i < 20; i++) {
     /// Should report an error at compile time, since due to these operations
     /// the list length will become > 10
     items.add(i);
@@ -68,7 +73,7 @@ void main() {
 
   items.clear();
 
-  while (items.length <= 10) {
+  while (items.length < 10) {
     /// Should pass
     items.add(5);
   }
@@ -146,5 +151,6 @@ class FunctionRefinement extends Refinement {
   /// The value is the identifier that will be used in predicates
   final Map<String, String>? namedParameters;
   final String returnIdentifier;
+  @override
   final String predicate;
 }
